@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
 /**
  * is_prime - Checks if a number is prime.
@@ -35,31 +36,57 @@ bool is_prime(int n)
 }
 
 /**
- * factorize - Performs factorization or checks if prime.
+ * gcd - Computes the greatest common divisor of two numbers.
+ * @a: The first number.
+ * @b: The second number.
+ * Return: The greatest common divisor of a and b.
+ */
+int gcd(int a, int b)
+{
+	if (b == 0)
+	{
+		return a;
+	}
+	return gcd(b, a % b);
+}
+
+/**
+ * pollards_rho - Performs Pollard's rho algorithm for factorization.
+ * @n: The number to factorize.
+ * Return: A non-trivial factor of n.
+ */
+int pollards_rho(int n)
+{
+	int x = 2, y = 2, d = 1;
+
+	while (d == 1)
+	{
+		x = (1LL * x * x + 1) % n;
+		y = (1LL * y * y + 1) % n;
+		y = (1LL * y * y + 1) % n;
+		d = gcd(abs(x - y), n);
+	}
+
+	return d;
+}
+
+/**
+ * factorize - Performs factorization using Pollard's rho algorithm.
  * @n: The number to factorize.
  * Return: None.
  */
 void factorize(int n)
 {
-	int p, q;
-	for (p = 2; p * p <= n; p++)
-	{
-		if (n % p == 0)
-		{
-			q = n / p;
-			printf("%d=%d*%d\n", n, p, q);
-			return;
-		}
-	}
-
 	if (is_prime(n))
 	{
 		printf("Number %d is prime.\n", n);
+		return;
 	}
-	else
-	{
-		printf("Number %d is not factorizable.\n", n);
-	}
+
+	int p = pollards_rho(n);
+	int q = n / p;
+
+	printf("%d=%d*%d\n", n, p, q);
 }
 
 /**
@@ -73,14 +100,14 @@ int main(int argc, char *argv[])
 	if (argc != 2)
 	{
 		fprintf(stderr, "Usage: %s <file>\n", argv[0]);
-		return (1);
+		return 1;
 	}
 
 	FILE *file = fopen(argv[1], "r");
 	if (file == NULL)
 	{
 		perror("Error opening file");
-		return (1);
+		return 1;
 	}
 
 	int num;
@@ -90,6 +117,6 @@ int main(int argc, char *argv[])
 	}
 
 	fclose(file);
-	return (0);
+	return 0;
 }
 
